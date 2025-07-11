@@ -1,4 +1,4 @@
-# 🔐 Authentication Feature - Flutter App
+# 🔐 Authentication Feature - Wheather App
 
 This is the implementation of the **Authentication Feature** for the summer internship task using:
 
