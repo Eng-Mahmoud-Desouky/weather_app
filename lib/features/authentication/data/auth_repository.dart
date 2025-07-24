@@ -6,9 +6,11 @@ abstract class AuthRepository {
   Future<UserModel> signUp(String email, String password, String name);
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
-  Stream<UserModel?> get authStateChanges;
+  Stream<UserModel?>
+  get authStateChanges; // Stream of user authentication state changes
 }
 
+// Implementation of the AuthRepository using Firebase as the data source
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _authRemoteDataSource;
 

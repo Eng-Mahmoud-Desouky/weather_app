@@ -6,22 +6,20 @@ import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
+  // ToDo: Search about StreamSubscription
   StreamSubscription<UserModel?>? _authStateSubscription;
 
   AuthCubit(this._authRepository) : super(const AuthInitial()) {
     _monitorAuthState();
   }
-
   void _monitorAuthState() {
-    _authStateSubscription = _authRepository.authStateChanges.listen(
-      (user) {
-        if (user != null) {
-          emit(AuthAuthenticated(user));
-        } else {
-          emit(const AuthUnauthenticated());
-        }
-      },
-    );
+    _authStateSubscription = _authRepository.authStateChanges.listen((user) {
+      if (user != null) {
+        emit(AuthAuthenticated(user));
+      } else {
+        emit(const AuthUnauthenticated());
+      }
+    });
   }
 
   Future<void> signIn(String email, String password) async {
@@ -79,6 +77,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  // Check auth status when the app starts
   Future<void> checkAuthStatus() async {
     emit(const AuthLoading());
     try {

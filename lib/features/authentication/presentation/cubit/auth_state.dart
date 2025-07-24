@@ -16,6 +16,7 @@ class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
+// Authenticated state contains the user object
 class AuthAuthenticated extends AuthState {
   final UserModel user;
 
