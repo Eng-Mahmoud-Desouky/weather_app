@@ -6,6 +6,12 @@ import '../../features/home_page/domain/repositories/weather_repository.dart';
 import '../../features/home_page/domain/usecases/get_current_weather.dart';
 import '../../features/home_page/domain/usecases/get_weather_forecast.dart';
 import '../../features/home_page/presentation/bloc/home_page_bloc.dart';
+import '../../features/ai_prediction/data/datasources/ai_prediction_remote_data_source.dart';
+import '../../features/ai_prediction/data/repositories/ai_prediction_repository_impl.dart';
+import '../../features/ai_prediction/domain/repositories/ai_prediction_repository.dart';
+import '../../features/ai_prediction/domain/usecases/predict_training_suitability.dart';
+import '../../features/ai_prediction/domain/usecases/check_ai_service_health.dart';
+import '../../features/ai_prediction/presentation/bloc/ai_prediction_bloc.dart';
 import '../constants/api_constants.dart';
 
 /// Service locator instance for dependency injection
@@ -33,6 +39,29 @@ Future<void> init() async {
   // Data sources
   sl.registerLazySingleton<WeatherRemoteDataSource>(
     () => WeatherRemoteDataSourceImpl(dio: sl()),
+  );
+
+  //! Features - AI Prediction
+  // BLoC
+  sl.registerFactory(
+    () => AiPredictionBloc(
+      predictTrainingSuitability: sl(),
+      checkAiServiceHealth: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => PredictTrainingSuitability(sl()));
+  sl.registerLazySingleton(() => CheckAiServiceHealth(sl()));
+
+  // Repository
+  sl.registerLazySingleton<AiPredictionRepository>(
+    () => AiPredictionRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<AiPredictionRemoteDataSource>(
+    () => AiPredictionRemoteDataSourceImpl(dio: sl()),
   );
 
   //! Core

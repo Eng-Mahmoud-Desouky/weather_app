@@ -11,6 +11,7 @@ import 'features/authentication/presentation/cubit/auth_state.dart';
 import 'features/authentication/presentation/pages/auth_welcome_screen.dart';
 import 'features/home_page/presentation/pages/home_screen.dart';
 import 'features/home_page/presentation/bloc/home_page_bloc.dart';
+import 'features/ai_prediction/presentation/bloc/ai_prediction_bloc.dart';
 import 'features/authentication/presentation/pages/login_screen.dart';
 import 'features/authentication/presentation/pages/signup_screen.dart';
 import 'firebase_options.dart';
@@ -43,6 +44,8 @@ class MyApp extends StatelessWidget {
         ),
         // Home Page BLoC
         BlocProvider(create: (context) => di.sl<HomePageBloc>()),
+        // AI Prediction BLoC
+        BlocProvider(create: (context) => di.sl<AiPredictionBloc>()),
       ],
       child: MaterialApp(
         title: 'Weather App',

@@ -9,6 +9,7 @@ import '../bloc/home_page_bloc.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/single_day_forecast.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import '../../../ai_prediction/presentation/bloc/ai_prediction_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -202,6 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
             weatherData: isToday ? state.weatherData : null,
             selectedDate: _selectedDate,
           ),
+          const SizedBox(height: 16),
         ],
       );
     } else if (state is WeatherForecastLoaded) {
@@ -363,39 +365,164 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Builds the training conditions section (placeholder)
+  /// Builds the training conditions section with AI prediction
   Widget _buildTrainingConditions() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4A00E0), Color(0xFF8E2DE2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return BlocBuilder<HomePageBloc, HomePageState>(
+      builder: (context, homeState) {
+        // Get current weather data
+        WeatherData? weatherData;
+        if (homeState is CurrentWeatherLoaded) {
+          weatherData = homeState.weatherData;
+        } else if (homeState is WeatherForecastLoaded) {
+          weatherData = homeState.currentWeather;
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4A00E0), Color(0xFF8E2DE2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.fitness_center, color: Colors.white70),
-              SizedBox(width: 8),
-              Text(
-                'Training Conditions',
-                style: TextStyle(color: Colors.white70),
+              const Row(
+                children: [
+                  Icon(Icons.fitness_center, color: Colors.white70),
+                  SizedBox(width: 8),
+                  Text(
+                    'Exercise Conditions',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
               ),
+              const SizedBox(height: 10),
+
+              // AI Prediction Display
+              if (weatherData != null)
+                Builder(
+                  builder: (context) {
+                    // Automatically trigger prediction when weather data is available
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      final aiBloc = context.read<AiPredictionBloc>();
+                      // Only trigger if not already loading or loaded with current data
+                      if (aiBloc.state is AiPredictionInitial ||
+                          aiBloc.state is AiPredictionError) {
+                        aiBloc.add(PredictFromWeatherData(weatherData!));
+                      }
+                    });
+
+                    return BlocBuilder<AiPredictionBloc, AiPredictionState>(
+                      builder: (context, aiState) {
+                        if (aiState is AiPredictionLoading) {
+                          return const Row(
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Analyzing weather conditions...',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          );
+                        } else if (aiState is AiPredictionLoaded) {
+                          final result = aiState.predictionResult;
+                          final isExerciseSuitable = result.suitableForExercise;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    isExerciseSuitable
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
+                                    color:
+                                        isExerciseSuitable
+                                            ? Colors.green
+                                            : Colors.red,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      isExerciseSuitable
+                                          ? 'Weather is suitable for exercise'
+                                          : 'Weather is not suitable for exercise',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                result.message,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          );
+                        } else if (aiState is AiPredictionError) {
+                          return const Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.orange,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Unable to analyze exercise conditions',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return const Text(
+                          'Tap to check exercise conditions',
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        );
+                      },
+                    );
+                  },
+                )
+              else
+                const Text(
+                  'Weather data not available',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
             ],
           ),
-          SizedBox(height: 10),
-          Text(
-            'Feature Coming Soon',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

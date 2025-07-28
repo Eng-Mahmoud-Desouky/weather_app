@@ -6,9 +6,9 @@ import 'package:equatable/equatable.dart';
 abstract class Failure extends Equatable {
   /// Error message describing what went wrong
   final String message;
-  
+
   const Failure(this.message);
-  
+
   @override
   List<Object> get props => [message];
 }
@@ -44,4 +44,24 @@ class ApiKeyFailure extends Failure {
 /// Generic failure for unexpected errors
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure(super.message);
+}
+
+/// Failure that occurs when request times out
+class TimeoutFailure extends Failure {
+  const TimeoutFailure(super.message);
+}
+
+/// Failure that occurs when input validation fails
+class ValidationFailure extends Failure {
+  const ValidationFailure(super.message);
+}
+
+/// Failure that occurs when a service is unavailable
+class ServiceUnavailableFailure extends Failure {
+  const ServiceUnavailableFailure(super.message);
+}
+
+/// Failure that occurs when there's an unknown error
+class UnknownFailure extends Failure {
+  const UnknownFailure(super.message);
 }
